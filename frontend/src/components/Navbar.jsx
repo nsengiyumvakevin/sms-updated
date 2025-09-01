@@ -11,7 +11,7 @@ export default function Navbar() {
   }
   return (
     <nav className="flex justify-between p-4 bg-yellow-500">
-      <div className="font-bold">School Management System</div>
+      <div className=" text-2xl">School Management System</div>
       <div className="space-x-4 text-2xl">
         {!user && <Link to="/login">Login</Link>}
         {!user && <Link to="/signup">Signup</Link>}
