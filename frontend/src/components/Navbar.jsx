@@ -1,29 +1,31 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-export default function Navbar() {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  function logout() {
+export default function Navbar({ user, setUser }) {
+  const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  }
+    setUser(null);
+  };
+
   return (
-    <nav className="flex justify-between p-4 bg-yellow-500">
-      <div className=" text-2xl">School Management System</div>
-      <div className="space-x-4 text-2xl">
-        {!user && <Link to="/login">Login</Link>}
-        {!user && <Link to="/signup">Signup</Link>}
-        {user && (
-          <span>
-            {user.name} ({user.role})
-          </span>
+    <nav className="bg-blue-600 text-white p-4 flex justify-between items-center">
+      <div className="text-2xl font-bold">School Management</div>
+      <div className="space-x-4">
+        {!user && (
+          <>
+            <Link to="/login" className="hover:underline text-xl">Login</Link>
+            <Link to="/signup" className="hover:underline text-xl">SignUp</Link>
+          </>
         )}
         {user && (
-          <button onClick={logout} className="ml-2 text-red-600">
-            Logout
-          </button>
+          <>
+            <span>Welcome, {user.name}</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 px-2 py-1 rounded hover:bg-red-600"
+            >
+              Logout
+            </button>
+          </>
         )}
       </div>
     </nav>

@@ -1,59 +1,79 @@
-import React, { useEffect, useState } from 'react'
-import API from '../services/api'
+import { useEffect, useState } from "react";
+import API from "../api";
 
-export default function AdminDashboard(){
-  const [users,setUsers]=useState([])
-  const [form,setForm]=useState({name:'',email:'',role:'student',password:''})
+export default function AdminDashboard() {
+  const [users, setUsers] = useState([]);
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "student" });
 
-  async function fetchUsers(){
-    const {data} = await API.get('/admin/users')
-    setUsers(data)
-  }
-  useEffect(()=>{ fetchUsers() }, [])
+  const fetchUsers = async () => {
+    const res = await API.get("/admin/users");
+    setUsers(res.data);
+  };
 
-  async function create(){
-    try{
-      await API.post('/admin/user', form)
-      setForm({name:'',email:'',role:'student',password:''})
-      fetchUsers()
-    }catch(e){ alert(e.response?.data?.message || 'Error') }
-  }
+  const addUser = async (e) => {
+    e.preventDefault();
+    await API.post("/admin/user", form);
+    setForm({ name: "", email: "", password: "", role: "student" });
+    fetchUsers();
+  };
 
-  async function remove(id){
-    if(!confirm('Delete?')) return
-    await API.delete('/admin/user/'+id)
-    fetchUsers()
-  }
+  const deleteUser = async (id) => {
+    await API.delete(`/admin/user/${id}`);
+    fetchUsers();
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl">Admin Dashboard</h2>
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        <div>
-          <h3>Create user</h3>
-          <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="w-full p-2 border" placeholder="Name" />
-          <input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className="w-full p-2 border" placeholder="Email" />
-          <input value={form.password} onChange={e=>setForm({...form,password:e.target.value})} className="w-full p-2 border" placeholder="Password (optional)" />
-          <select value={form.role} onChange={e=>setForm({...form,role:e.target.value})} className="w-full p-2 border">
-            <option value="student">Student</option>
-            <option value="teacher">Teacher</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button onClick={create} className="mt-2 px-4 py-2 bg-blue-500 text-white">Create</button>
-        </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
 
-        <div>
-          <h3>Users</h3>
-          <ul>
-            {users.map(u => (
-              <li key={u.id} className="flex justify-between p-2 border my-1">
-                <div>{u.name} — {u.email} — {u.role}</div>
-                <div><button onClick={()=>remove(u.id)} className="text-red-500">Delete</button></div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <form onSubmit={addUser} className="my-4 flex gap-2">
+        <input
+          placeholder="Name"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="border p-2 rounded block"
+        />
+        <input
+          placeholder="Email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className="border p-2 rounded block"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          className="border p-2 rounded block"
+        />
+        <select
+          value={form.role}
+          onChange={(e) => setForm({ ...form, role: e.target.value })}
+          className="border p-2 rounded block"
+        >
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+        <button className="bg-green-600 text-white px-3 py-1 rounded">Add</button>
+      </form>
+
+      <ul>
+        {users.map((u) => (
+          <li key={u._id} className="flex justify-between border-b py-2">
+            {u.name} ({u.role})
+            <button
+              onClick={() => deleteUser(u._id)}
+              className="bg-red-600 text-white px-2 py-1 rounded"
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
-  )
+  );
 }

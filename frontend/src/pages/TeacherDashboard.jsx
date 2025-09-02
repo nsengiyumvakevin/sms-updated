@@ -1,60 +1,57 @@
-import React, { useEffect, useState } from 'react'
-import API from '../services/api'
+import { useEffect, useState } from "react";
+import API from "../api";
 
-export default function TeacherDashboard(){
-  const [title,setTitle]=useState('')
-  const [desc,setDesc]=useState('')
-  const [subjects,setSubjects]=useState([])
+export default function TeacherDashboard() {
+  const [subjects, setSubjects] = useState([]);
+  const [name, setName] = useState("");
 
-  async function fetchSubjects(){
-    const {data} = await API.get('/student/subjects')
-    // filter to show teacher's own subjects if desired; here we show all but delete/update will be blocked server-side if not owner
-    setSubjects(data)
-  }
-  useEffect(()=>{ fetchSubjects() }, [])
+  const fetchSubjects = async () => {
+    const res = await API.get("/student/subjects");
+    setSubjects(res.data);
+  };
 
-  async function create(){
-    try{
-      await API.post('/teacher/subject',{title,description:desc})
-      setTitle(''); setDesc(''); fetchSubjects()
-    }catch(e){ alert(e.response?.data?.message || 'Error') }
-  }
+  const addSubject = async (e) => {
+    e.preventDefault();
+    await API.post("/teacher/subject", { name });
+    setName("");
+    fetchSubjects();
+  };
 
-  async function del(id){
-    if(!confirm('Delete?')) return
-    try{
-      await API.delete('/teacher/subject/'+id)
-      fetchSubjects()
-    }catch(e){ alert(e.response?.data?.message || 'Error') }
-  }
+  const deleteSubject = async (id) => {
+    await API.delete(`/teacher/subject/${id}`);
+    fetchSubjects();
+  };
+
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl">Teacher Dashboard</h2>
-      <div className="mt-4 p-2">
-        <h3>Create Subject</h3>
-        <input value={title} onChange={e=>setTitle(e.target.value)} className="w-full p-2 border rounded-xl" placeholder="Title" /><br/>
-        <textarea value={desc} onChange={e=>setDesc(e.target.value)} className="w-full p-2 border rounded-xl" placeholder="Description" />
-        <button onClick={create} className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">Create</button>
-      </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Teacher Dashboard</h1>
+      <form onSubmit={addSubject} className="my-4 flex gap-2">
+        <input
+          placeholder="Subject Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <button className="bg-green-600 text-white px-3 py-1 rounded">Add</button>
+      </form>
 
-      <div className="mt-6">
-        <h3>Your Subjects</h3>
-        <ul>
-          {subjects.map(s=> (
-            <li key={s.id} className="p-2 border my-1 flex justify-between">
-              <div>
-                <div className="font-bold">{s.title}</div>
-                <div className="text-sm">{s.description}</div>
-                <div className="text-xs text-gray-600">Teacher: {s.teacher_name || 'Unknown'}</div>
-              </div>
-              <div>
-                <button onClick={()=>del(s.id)} className="text-red-500">Delete</button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul>
+        {subjects.map((s) => (
+          <li key={s._id} className="flex justify-between border-b py-2">
+            {s.name}
+            <button
+              onClick={() => deleteSubject(s._id)}
+              className="bg-red-600 text-white px-2 py-1 rounded"
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
-  )
+  );
 }
